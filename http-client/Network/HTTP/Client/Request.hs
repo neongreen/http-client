@@ -287,6 +287,7 @@ defaultRequest = Request
                 Just (_ :: IOException) -> return ()
                 Nothing -> throwIO se
         , requestManagerOverride = Nothing
+        , connectionOverride = Nothing
         }
 
 -- | Parses a URL via 'parseRequest_'
