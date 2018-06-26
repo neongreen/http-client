@@ -57,7 +57,7 @@ import qualified Data.Map as Map
 import Data.Text (Text)
 import Data.Streaming.Zlib (ZlibException)
 import Data.CaseInsensitive as CI
-import Data.KeyedPool (KeyedPool)
+import Data.KeyedPool (KeyedPool, Managed)
 
 -- | An @IO@ action that represents an incoming response body coming from the
 -- server. Data provided by this action has already been gunzipped and
@@ -550,6 +550,10 @@ data Request = Request
     -- dealing with implicit global managers, such as in @Network.HTTP.Simple@
     --
     -- @since 0.4.28
+
+    , connectionOverride :: Maybe (Managed Connection)
+    -- ^ Use a particular connection for this request, instead of asking the
+    -- manager for one.
     }
     deriving T.Typeable
 

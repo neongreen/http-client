@@ -201,6 +201,7 @@ getConn :: Request
         -> Manager
         -> IO (Managed Connection)
 getConn req m
+    | Just conn <- connectionOverride req = pure conn
     -- Stop Mac OS X from getting high:
     -- https://github.com/snoyberg/http-client/issues/40#issuecomment-39117909
     | S8.null h = throwHttp $ InvalidDestinationHost h
