@@ -43,6 +43,7 @@ opensslManagerSettings mkContext = defaultManagerSettings
                         (SSL.read ssl 32752)
                         (SSL.write ssl)
                         (N.close sock)
+                        ssl
     , managerTlsProxyConnection = do
         ctx <- mkContext
         return $ \connstr checkConn _serverName _ha host' port' -> do
@@ -66,6 +67,7 @@ opensslManagerSettings mkContext = defaultManagerSettings
                             (recv sock 32752)
                             (sendAll sock)
                             (return ())
+                            sock
                     connectionWrite conn connstr
                     checkConn conn
                     ssl <- SSL.connection ctx sock
@@ -74,4 +76,5 @@ opensslManagerSettings mkContext = defaultManagerSettings
                         (SSL.read ssl 32752)
                         (SSL.write ssl)
                         (N.close sock)
+                        ssl
     }

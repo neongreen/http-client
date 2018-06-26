@@ -165,6 +165,7 @@ convertConnection conn = makeConnection
     -- on the socket.  But when this is called the socket might be
     -- already closed, and we get a @ResourceVanished@.
     (NC.connectionClose conn `Control.Exception.catch` \(_ :: IOException) -> return ())
+    conn
 
 -- We may decide in the future to just have a global
 -- ConnectionContext and use it directly in tlsManagerSettings, at
