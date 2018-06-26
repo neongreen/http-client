@@ -37,6 +37,7 @@ module Network.HTTP.Client.Types
 import qualified Data.Typeable as T (Typeable)
 import Network.HTTP.Types
 import Control.Exception (Exception, SomeException, throwIO)
+import Data.Dynamic (Dynamic)
 import Data.Word (Word64)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -79,6 +80,8 @@ data Connection = Connection
       -- ^ Close connection. Any successive operation on the connection
       -- (except closing) should fail with `ConnectionClosed` exception.
       -- It is allowed to close connection multiple times.
+    , connectionRaw :: Dynamic
+      -- ^ The underlying thingy (e.g. a socket)
     }
     deriving T.Typeable
 
