@@ -243,6 +243,7 @@ spec = describe "Client" $ do
           (return S.empty)
           (const checkStatus)
           (checkStatus >> writeIORef closedRef True)
+          False
 
         Internal.connectionClose conn
 
