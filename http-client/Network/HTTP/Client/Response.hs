@@ -53,7 +53,11 @@ getRedirectedRequest req hs cookie_jar code
     | 300 <= code && code < 400 = do
         l' <- lookup "location" hs
         let l = escapeURIString isAllowedInURI (S8.unpack l')
-        req' <- setUriRelative req =<< parseURIReference l
+            stripHeaders r =
+              r{requestHeaders =
+                filter (not . shouldStripHeaderOnRedirect req . fst) $
+                requestHeaders r}
+        req' <- fmap stripHeaders <$> setUriRelative req =<< parseURIReference l
         return $
             if code == 302 || code == 303
                 -- According to the spec, this should *only* be for status code
@@ -87,7 +91,7 @@ getResponse :: Maybe Int
 getResponse timeout' req@(Request {..}) mconn cont = do
     let conn = managedResource mconn
     StatusHeaders s version hs <- parseStatusHeaders conn timeout' cont
-    let mcl = lookup "content-length" hs >>= readDec . S8.unpack
+    let mcl = lookup "content-length" hs >>= readPositiveInt . S8.unpack
         isChunked = ("transfer-encoding", CI.mk "chunked") `elem` map (second CI.mk) hs
 
         -- should we put this connection back into the connection manager?
@@ -103,15 +107,14 @@ getResponse timeout' req@(Request {..}) mconn cont = do
             else do
                 body1 <-
                     if isChunked
-                        then makeChunkedReader rawBody conn
+                        then makeChunkedReader (cleanup True) rawBody conn
                         else
                             case mcl of
-                                Just len -> makeLengthReader len conn
-                                Nothing -> makeUnlimitedReader conn
-                body2 <- if needsGunzip req hs
+                                Just len -> makeLengthReader (cleanup True) len conn
+                                Nothing -> makeUnlimitedReader (cleanup True) conn
+                if needsGunzip req hs
                     then makeGzipReader body1
                     else return body1
-                return $ brAddCleanup (cleanup True) body2
 
     return Response
         { responseStatus = s

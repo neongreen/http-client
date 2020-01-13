@@ -1,5 +1,5 @@
 name:            http-conduit
-version:         2.3.1
+version:         2.3.7.3
 license:         BSD3
 license-file:    LICENSE
 author:          Michael Snoyman <michael@snoyman.com>
@@ -21,15 +21,16 @@ extra-source-files: test/main.hs
                   , ChangeLog.md
 
 library
-    build-depends: base                  >= 4       && < 5
+    build-depends: base                  >= 4.10    && < 5
                  , aeson                 >= 0.8
+                 , attoparsec
                  , bytestring            >= 0.9.1.4
                  , transformers          >= 0.2
                  , resourcet             >= 1.1
                  , conduit               >= 1.2
                  , conduit-extra         >= 1.1
                  , http-types            >= 0.7
-                 , http-client           >= 0.5     && < 0.6
+                 , http-client           >= 0.5.13  && < 0.7
                  , http-client-tls       >= 0.3     && < 0.4
                  , mtl
                  , unliftio-core
@@ -55,6 +56,7 @@ test-suite test
                  , data-default-class
                  , connection >= 0.2
                  , warp-tls
+                 , tls < 1.5 || >= 1.5.2
                  , time
                  , blaze-builder
                  , bytestring
@@ -64,9 +66,8 @@ test-suite test
                  , utf8-string
                  , case-insensitive
                  , unliftio
-                 , network
                  , wai >= 3.0 && < 3.3
-                 , warp >= 3.0.0.2 && < 3.3
+                 , warp >= 3.0.0.2 && < 3.4
                  , wai-conduit
                  , http-types
                  , cookie
@@ -77,6 +78,7 @@ test-suite test
                  , aeson
                  , temporary
                  , resourcet
+                 , network
 
 source-repository head
   type:     git

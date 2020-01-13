@@ -1,3 +1,43 @@
+# ChangeLog for http-conduit
+
+## 2.3.7.3
+
+* Relax test suite version bounds
+
+## 2.3.7.2
+
+* Add the `network3` flag
+
+## 2.3.7.1
+
+* Properly skip whitespace after JSON body [#401](https://github.com/snoyberg/http-client/issues/401)
+
+## 2.3.7
+
+* Ensure entire JSON response body is consumed [#395](https://github.com/snoyberg/http-client/issues/395)
+
+## 2.3.6.1
+
+* Add back compatibility with older http-client version [#393](https://github.com/snoyberg/http-client/pull/393)
+
+## 2.3.6
+
+* Add `httpSource` to `Network.HTTP.Client.Conduit` [#390](https://github.com/snoyberg/http-client/pull/390).
+
+## 2.3.5
+
+* Adds `addToRequestQueryString` helper function
+
+## 2.3.4
+
+* Reexport RequestHeaders from Network.HTTP.Types (what was intended in last version)
+* Fix mistake in ChangeLog
+
+## 2.3.3
+
+* Reexport Header, QueryItem and ResponseHeaders from Network.HTTP.Types
+* Rewrite a type signature of setRequestHeaders with RequestHeaders
+
 ## 2.3.2
 
 * Adds `parseRequestThrow`, `parseRequestThrow_`, and

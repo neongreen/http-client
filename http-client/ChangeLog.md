@@ -1,3 +1,46 @@
+# Changelog for http-client
+
+## 0.6.4
+
+* Avoid throwing an exception when a malformed HTTP header is received,
+  to be as robust as commonly used HTTP clients.
+  See [#398](https://github.com/snoyberg/http-client/issues/398)
+
+## 0.6.3
+
+* Detect response body termination before reading an extra null chunk
+  when possible. This allows connections to be reused in some corner
+  cases. See
+  [#395](https://github.com/snoyberg/http-client/issues/395)
+
+## 0.6.2
+
+* Add `shouldStripHeaderOnRedirect` option to `Request` [#300](https://github.com/snoyberg/http-client/issues/300)
+
+## 0.6.1.1
+
+* Ensure that `Int` parsing doesn't overflow [#383](https://github.com/snoyberg/http-client/issues/383)
+
+## 0.6.1
+
+* Add `setUriEither` to `Network.HTTP.Client.Internal`
+
+## 0.6.0
+
+* Generalize `renderParts` over arbitrary applicative functors.  One particular
+  use case that is enabled by this change is that now `renderParts` can be used
+  in pure code by using it in combination with `runIdentity`.
+
+## 0.5.14
+
+* Omit port for `getUri` when protocol is `http` and port is `80`, or when
+  protocol is `https` and port is `443`
+* Sending requests with invalid headers now throws InvalidRequestHeader exception
+
+## 0.5.13.1
+
+* Add a workaround for a cabal bug [haskell-infra/hackage-trustees#165](https://github.com/haskell-infra/hackage-trustees/issues/165)
+
 ## 0.5.13
 
 * Adds `setRequestCheckStatus` and `throwErrorStatusCodes` functions.
