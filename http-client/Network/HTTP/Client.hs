@@ -40,7 +40,7 @@
 -- application which will make a large number of requests to different hosts,
 -- and will never make more than one connection to a single host, then sharing
 -- a 'Manager' will result in idle connections being kept open longer than
--- necessary. In such a situation, it makes sense to use 'withManager' around
+-- necessary. In such a situation, it makes sense to use 'newManager' before
 -- each new request, to avoid running out of file descriptors. (Note that the
 -- 'managerIdleConnectionCount' setting mitigates the risk of leaking too many
 -- file descriptors.)
@@ -159,6 +159,7 @@ module Network.HTTP.Client
     , applyBasicProxyAuth
     , decompress
     , redirectCount
+    , shouldStripHeaderOnRedirect
     , checkResponse
     , responseTimeout
     , cookieJar
@@ -210,6 +211,7 @@ import Network.HTTP.Client.Types
 import Data.IORef (newIORef, writeIORef, readIORef, modifyIORef)
 import qualified Data.ByteString.Lazy as L
 import Data.Foldable (Foldable)
+import Data.Monoid
 import Data.Traversable (Traversable)
 import Network.HTTP.Types (statusCode)
 import GHC.Generics (Generic)
@@ -350,7 +352,8 @@ managerSetProxy po = managerSetInsecureProxy po . managerSetSecureProxy po
 -- >   print $ responseBody response
 --
 
--- | Specify a response timeout in microseconds
+-- | Specify maximum time in microseconds the retrieval of response
+-- headers is allowed to take
 --
 -- @since 0.5.0
 responseTimeoutMicro :: Int -> ResponseTimeout

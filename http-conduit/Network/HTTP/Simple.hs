@@ -28,9 +28,13 @@ module Network.HTTP.Simple
     , httpSource
     , withResponse
       -- * Types
+    , H.Header
     , H.Query
+    , H.QueryItem
     , H.Request
+    , H.RequestHeaders
     , H.Response
+    , H.ResponseHeaders
     , JSONException (..)
     , H.HttpException (..)
     , H.Proxy (..)
@@ -53,6 +57,7 @@ module Network.HTTP.Simple
     , setRequestHeaders
     , setRequestQueryString
     , getRequestQueryString
+    , addToRequestQueryString
       -- ** Request body
     , setRequestBody
     , setRequestBodyJSON
@@ -90,6 +95,7 @@ import qualified Data.Aeson.Types as A
 import qualified Data.Aeson as A
 import qualified Data.Traversable as T
 import Control.Exception (throw, throwIO, Exception)
+import Data.Monoid
 import Data.Typeable (Typeable)
 import qualified Data.Conduit as C
 import Data.Conduit (runConduit, (.|), ConduitM)
@@ -99,6 +105,8 @@ import Data.Int (Int64)
 import Control.Monad.Trans.Resource (MonadResource, MonadThrow)
 import qualified Control.Exception as E (bracket)
 import Data.Void (Void)
+import qualified Data.Attoparsec.ByteString as Atto
+import qualified Data.Attoparsec.ByteString.Char8 as Atto8
 
 -- | Perform an HTTP request and return the body as a @ByteString@.
 --
@@ -146,7 +154,8 @@ httpJSONEither req = liftIO $ httpSink req' sink
   where
     req' = addRequestHeader H.hAccept "application/json" req
     sink orig = fmap (\x -> fmap (const x) orig) $ do
-        eres1 <- C.sinkParserEither json'
+        eres1 <- C.sinkParserEither (json' <* (Atto8.skipSpace *> Atto.endOfInput))
+
         case eres1 of
             Left e -> return $ Left $ JSONParseException req' orig e
             Right value ->
@@ -328,7 +337,7 @@ setRequestHeader name vals req =
 -- __first__.
 --
 -- @since 2.1.10
-setRequestHeaders :: [(H.HeaderName, S.ByteString)] -> H.Request -> H.Request
+setRequestHeaders :: H.RequestHeaders -> H.Request -> H.Request
 setRequestHeaders x req = req { H.requestHeaders = x }
 
 -- | Get the query string parameters
@@ -342,6 +351,13 @@ getRequestQueryString = H.parseQuery . H.queryString
 -- @since 2.1.10
 setRequestQueryString :: H.Query -> H.Request -> H.Request
 setRequestQueryString = H.setQueryString
+
+-- | Add to the existing query string parameters.
+--
+-- @since 2.3.5
+addToRequestQueryString :: H.Query -> H.Request -> H.Request
+addToRequestQueryString additions req = setRequestQueryString q req
+    where q = additions <> getRequestQueryString req
 
 -- | Set the request body to the given 'H.RequestBody'. You may want to
 -- consider using one of the convenience functions in the modules, e.g.

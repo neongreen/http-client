@@ -78,7 +78,7 @@ data Connection = Connection
       -- ^ Send data to server
     , connectionClose :: IO ()
       -- ^ Close connection. Any successive operation on the connection
-      -- (exept closing) should fail with `ConnectionClosed` exception.
+      -- (except closing) should fail with `ConnectionClosed` exception.
       -- It is allowed to close connection multiple times.
     , connectionRaw :: Dynamic
       -- ^ The underlying thingy (e.g. a socket)
@@ -159,7 +159,7 @@ data HttpExceptionContent
                    --
                    -- @since 0.5.0
                    | ConnectionFailure SomeException
-                   -- ^ An exception occured when trying to connect to the
+                   -- ^ An exception occurred when trying to connect to the
                    -- server.
                    --
                    -- @since 0.5.0
@@ -171,6 +171,10 @@ data HttpExceptionContent
                    -- ^ The given response header line could not be parsed
                    --
                    -- @since 0.5.0
+                   | InvalidRequestHeader S.ByteString
+                   -- ^ The given request header is not compliant (e.g. has newlines)
+                   --
+                   -- @since 0.5.14
                    | InternalException SomeException
                    -- ^ An exception was raised by an underlying library when
                    -- performing the request. Most often, this is caused by a
@@ -517,9 +521,9 @@ data Request = Request
     --
     -- @since 0.5.0
     , responseTimeout :: ResponseTimeout
-    -- ^ Number of microseconds to wait for a response. If
-    -- @Nothing@, will wait indefinitely. Default: use
-    -- 'managerResponseTimeout' (which by default is 30 seconds).
+    -- ^ Number of microseconds to wait for a response (see 'ResponseTimeout'
+    -- for more information). Default: use 'managerResponseTimeout' (which by
+    -- default is 30 seconds).
     --
     -- Since 0.1.0
     , cookieJar :: Maybe CookieJar
@@ -554,16 +558,26 @@ data Request = Request
     , connectionOverride :: Maybe (Managed Connection)
     -- ^ Use a particular connection for this request, instead of asking the
     -- manager for one.
+    , shouldStripHeaderOnRedirect :: HeaderName -> Bool
+    -- ^ Decide whether a header must be stripped from the request
+    -- when following a redirect. Default: keep all headers intact.
+    --
+    -- @since 0.6.2
     }
     deriving T.Typeable
 
--- | How to deal with timing out a response
+-- | How to deal with timing out on retrieval of response headers.
 --
 -- @since 0.5.0
 data ResponseTimeout
     = ResponseTimeoutMicro !Int
+    -- ^ Wait the given number of microseconds for response headers to
+    -- load, then throw an exception
     | ResponseTimeoutNone
+    -- ^ Wait indefinitely
     | ResponseTimeoutDefault
+    -- ^ Fall back to the manager setting ('managerResponseTimeout') or, in its
+    -- absence, Wait 30 seconds and then throw an exception.
     deriving (Eq, Show)
 
 instance Show Request where
@@ -687,6 +701,9 @@ data ManagerSettings = ManagerSettings
     -- Since 0.3.7
     , managerModifyRequest :: Request -> IO Request
     -- ^ Perform the given modification to a @Request@ before performing it.
+    --
+    -- This function may be called more than once during request processing.
+    -- see https://github.com/snoyberg/http-client/issues/350
     --
     -- Default: no modification
     --
